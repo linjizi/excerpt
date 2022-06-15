@@ -39,3 +39,4 @@ open和close是事件
 方案一：
 在响应事件中添加form.resetFields()，借助Form组件的API清空状态
 ##封装Message
+##组件绑定原生事件时需要加.native修饰符

@@ -9,8 +9,17 @@
         ></el-col
       >
       <el-col :span="8">
-        <el-input placeholder="请输入内容" class="input-search">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-input
+          placeholder="请输入内容"
+          class="input-search"
+          v-model="keyWord"
+          @keyup.enter.native="searcTruelove"
+        >
+          <el-button
+            slot="append"
+            icon="el-icon-search"
+            @click="searcTruelove"
+          ></el-button>
         </el-input>
       </el-col>
     </el-row>
@@ -21,16 +30,6 @@
       :row-style="{ height: '128px' }"
     >
       <el-table-column type="selection" width="59" align="center">
-      </el-table-column>
-      <el-table-column prop="cover" label="封面" width="120" align="center">
-        <template>
-          <el-image
-            style="textAlign: center, height: 100%"
-            :src="imgPath"
-            :preview-src-list="[imgPath]"
-          >
-          </el-image>
-        </template>
       </el-table-column>
       <el-table-column prop="title" label="文名" width="150" align="center">
       </el-table-column>
@@ -50,7 +49,17 @@
         align="center"
       >
       </el-table-column>
-
+      <el-table-column prop="tags" label="标签" width="120" align="center">
+        <template slot-scope="scope">
+          <el-tag
+            v-for="(tag, index) in scope.row.tags"
+            :key="index"
+            disable-transitions
+            size="mini"
+            >{{ tag }}</el-tag
+          >
+        </template>
+      </el-table-column>
       <el-table-column
         prop="copyWriting"
         label="文案"
@@ -115,19 +124,18 @@
 import TrueloveDialog from "../components/TrueloveDialog";
 import { mapState, mapMutations } from "vuex";
 import request from "../utils/request";
-import imgPath from "../assets/saye.jpg";
 import Message from "../utils/message";
 
-console.log(imgPath);
 export default {
   name: "Truelove",
   components: { TrueloveDialog },
   data() {
     return {
-      imgPath,
       // 每页显示条目个数
       pageSize: 3,
       currentPage: 1,
+      // 保存搜索输入框的关键词
+      keyWord: "",
     };
   },
   computed: {
@@ -160,10 +168,21 @@ export default {
         }
       );
     },
-    // 编辑
-    // editTruelove(truelove) {
-    //   console.log(truelove);
-    // },
+    // 查询
+    searcTruelove() {
+      console.log(this.keyWord);
+      request(`/searchTruelove?keyWord=${this.keyWord}`).then(
+        (res) => {
+          console.log(res);
+          this.UPDATETRUELOVES(res.data.truelove);
+          Message.scccess(res.data.message);
+        },
+        (err) => {
+          console.log(err);
+          Message.error(res.response.data);
+        }
+      );
+    },
   },
   // mounted钩子
   mounted() {
@@ -197,6 +216,9 @@ export default {
     }
     .cell {
       white-space: pre-wrap;
+    }
+    .el-tag {
+      margin-right: 5px;
     }
   }
   .el-pagination {

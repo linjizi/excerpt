@@ -1,15 +1,24 @@
+const formData = {
+  tags: [],
+  title: "",
+  author: "",
+  protagonist: "",
+  firstPublish: "",
+  copyWriting: "",
+};
+
 const trueloveStore = {
   namespaced: true,
   state: {
     trueloveDialogVisible: false,
     trueloves: [],
-    editTruelove: null
+    // 表单数据
+    trueloveForm: formData,
   },
   mutations: {
     CHANGETRUELOVEDIALOGVISIBLE(store, obj) {
       store.trueloveDialogVisible = obj.isShowDialog;
-      store.editTruelove = obj.truelove ? obj.truelove : null;
-      console.log(store.editTruelove);
+      store.trueloveForm = obj.truelove ? obj.truelove : formData;
     },
     UPDATETRUELOVES(store, val) {
       store.trueloves = val;

@@ -1,7 +1,7 @@
 <template>
   <div class="trueloveDialog">
     <el-dialog
-      title="新增书籍"
+      :title="trueloveForm._id ? '编辑书籍' : '新增书籍'"
       :visible="trueloveDialogVisible"
       width="600px"
       top="0px"
@@ -11,7 +11,7 @@
     >
       <el-form
         ref="trueloveForm"
-        :model="editTruelove || trueloveForm"
+        :model="trueloveForm"
         label-width="80px"
         :rules="trueloveRules"
       >
@@ -34,27 +34,15 @@
             :rows="4"
           ></el-input>
         </el-form-item>
-        <el-form-item label="封面：" prop="cover">
-          <el-upload
-            action="none"
-            list-type="picture-card"
-            :auto-upload="false"
-            :on-change="hideUpload"
-            :class="{ hide: isHideClass }"
-          >
-            <i slot="default" class="el-icon-plus"></i>
-            <div slot="file" slot-scope="{ file }">
-              <img
-                class="el-upload-list__item-thumbnail"
-                :src="file.url"
-                alt=""
-                @click="handlePictureCardPreview(file)"
-              />
-            </div>
-          </el-upload>
-          <el-dialog :visible.sync="dialogVisible">
-            <img width="100%" :src="dialogImageUrl" alt="" />
-          </el-dialog>
+        <el-form-item label="标签：" prop="tags">
+          <el-checkbox-group v-model="trueloveForm.tags">
+            <el-checkbox
+              v-for="(tag, index) in tags"
+              :key="index"
+              :label="tag"
+              :name="tag"
+            ></el-checkbox>
+          </el-checkbox-group>
         </el-form-item>
         <el-form-item class="fromButton">
           <el-button type="primary" @click="onSubmit('trueloveForm')"
@@ -76,23 +64,35 @@ import Message from "../utils/message";
 // 引入request
 import request from "../utils/request";
 
+const tags = [
+  "爽文",
+  "惊悚",
+  "悬疑",
+  "末世",
+  "科幻",
+  "星际",
+  "哨兵向导",
+  "电竞",
+  "娱乐圈",
+  "种田",
+  "校园",
+  "暗恋",
+  "破镜重圆",
+  "权谋",
+  "无限流",
+  "快穿",
+  "穿书",
+  "病娇",
+  "强强",
+  "直掰弯",
+  "ABO",
+];
+
 export default {
   name: "TrueloveDialog",
   data() {
     return {
-      dialogVisible: false,
-      dialogImageUrl: "",
       // 是否给上传框的父级追加hide类名
-      isHideClass: false,
-      // 表单数据
-      trueloveForm: {
-        cover: "",
-        title: "",
-        author: "",
-        protagonist: "",
-        firstPublish: "",
-        copyWriting: "",
-      },
       // 表单校验规则
       trueloveRules: {
         title: [
@@ -102,27 +102,17 @@ export default {
           { required: true, message: "输入作者不能为空", trigger: "blur" },
         ],
       },
+      tags,
     };
   },
   computed: {
-    ...mapState("trueloveStore", ["trueloveDialogVisible", "editTruelove"]),
+    ...mapState("trueloveStore", ["trueloveDialogVisible", "trueloveForm"]),
   },
   methods: {
     ...mapMutations("trueloveStore", [
       "CHANGETRUELOVEDIALOGVISIBLE",
       "UPDATETRUELOVES",
     ]),
-    // 预览图片
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
-      this.dialogVisible = true;
-    },
-    // Upload组件on-change的回调，选取文件后隐藏上传框
-    hideUpload(file, fileList) {
-      this.isHideClass = true;
-      // 将图片路径存放在cover
-      this.trueloveForm.cover = file.url;
-    },
     // 表单提交的回调
     onSubmit(refName) {
       this.$refs[refName].validate((valid) => {
@@ -136,27 +126,43 @@ export default {
             truelove.title = "《" + truelove.title + "》";
           }
           // 发送请求
-          request
-            .post("/addTruelove", {
-              ...truelove,
-            })
-            .then(
+          if (truelove._id) {
+            // 修改
+            request.post("/editTruelove", { ...truelove }).then(
               (res) => {
                 // 更新页面
                 this.UPDATETRUELOVES(res.data.truelove);
                 Message.scccess(res.data.message);
-                console.log(res);
               },
               (err) => {
-                console.log(err);
                 Message.error(err.response.data);
               }
             );
+          } else {
+            // 增加
+            request
+              .post("/addTruelove", {
+                ...truelove,
+              })
+              .then(
+                (res) => {
+                  // 更新页面
+                  this.UPDATETRUELOVES(res.data.truelove);
+                  Message.scccess(res.data.message);
+                  console.log(res);
+                },
+                (err) => {
+                  console.log(err);
+                  Message.error(err.response.data);
+                }
+              );
+          }
           // 关闭对话框
           this.closeTrueloveDialog(refName);
         }
       });
     },
+    // 关闭对话框
     closeTrueloveDialog(refName) {
       // 关闭对话框时，清空表单
       this.$refs[refName].resetFields();
@@ -164,7 +170,7 @@ export default {
     },
   },
   watch: {},
-  mounted() {
+  updated() {
     console.log(this.editTruelove);
   },
 };
