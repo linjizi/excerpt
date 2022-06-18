@@ -13,13 +13,13 @@ const routes = [
   {
     path: "/",
     name: "layout",
-    redirect: "/bookrack/truelove",
+    redirect: "/extract",
     component: Layout,
     children: [
       {
         path: "bookrack",
         name: "bookrack",
-        redirect: "/bookrack/truelove",
+        redirect: "/extract",
         component: Bookrack,
         children: [
           {

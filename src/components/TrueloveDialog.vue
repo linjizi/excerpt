@@ -58,11 +58,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
-// 引入Message
-import Message from "../utils/message";
-// 引入request
-import request from "../utils/request";
+import { mapState, mapMutations, mapActions } from "vuex";
 
 const tags = [
   "爽文",
@@ -113,6 +109,7 @@ export default {
       "CHANGETRUELOVEDIALOGVISIBLE",
       "UPDATETRUELOVES",
     ]),
+    ...mapActions("trueloveStore", ["editTruelove", "addTruelove"]),
     // 表单提交的回调
     onSubmit(refName) {
       this.$refs[refName].validate((valid) => {
@@ -127,35 +124,9 @@ export default {
           }
           // 发送请求
           if (truelove._id) {
-            // 修改
-            request.post("/editTruelove", { ...truelove }).then(
-              (res) => {
-                // 更新页面
-                this.UPDATETRUELOVES(res.data.truelove);
-                Message.scccess(res.data.message);
-              },
-              (err) => {
-                Message.error(err.response.data);
-              }
-            );
+            this.editTruelove(truelove);
           } else {
-            // 增加
-            request
-              .post("/addTruelove", {
-                ...truelove,
-              })
-              .then(
-                (res) => {
-                  // 更新页面
-                  this.UPDATETRUELOVES(res.data.truelove);
-                  Message.scccess(res.data.message);
-                  console.log(res);
-                },
-                (err) => {
-                  console.log(err);
-                  Message.error(err.response.data);
-                }
-              );
+            this.addTruelove(truelove);
           }
           // 关闭对话框
           this.closeTrueloveDialog(refName);
@@ -169,10 +140,6 @@ export default {
       this.CHANGETRUELOVEDIALOGVISIBLE({ isShowDialog: false });
     },
   },
-  watch: {},
-  updated() {
-    console.log(this.editTruelove);
-  },
 };
 </script>
 
@@ -185,11 +152,6 @@ export default {
         margin-left: 20px;
       }
     }
-  }
-}
-.hide {
-  .el-upload--picture-card {
-    display: none;
   }
 }
 </style>

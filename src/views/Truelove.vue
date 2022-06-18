@@ -10,15 +10,15 @@
       >
       <el-col :span="8">
         <el-input
-          placeholder="请输入内容"
+          placeholder="请输入文名、作者、主角进行搜索"
           class="input-search"
           v-model="keyWord"
-          @keyup.enter.native="searcTruelove"
+          @keyup.enter.native="searcTruelove(keyWord)"
         >
           <el-button
             slot="append"
             icon="el-icon-search"
-            @click="searcTruelove"
+            @click="searcTruelove(keyWord)"
           ></el-button>
         </el-input>
       </el-col>
@@ -122,9 +122,7 @@
 
 <script>
 import TrueloveDialog from "../components/TrueloveDialog";
-import { mapState, mapMutations } from "vuex";
-import request from "../utils/request";
-import Message from "../utils/message";
+import { mapState, mapMutations, mapActions } from "vuex";
 
 export default {
   name: "Truelove",
@@ -151,51 +149,20 @@ export default {
       "CHANGETRUELOVEDIALOGVISIBLE",
       "UPDATETRUELOVES",
     ]),
+    ...mapActions("trueloveStore", [
+      "getTrueloveList",
+      "deleteTruelove",
+      "searcTruelove",
+    ]),
     // 跳转至当前页
     handleCurrentChange(val) {
       this.currentPage = val;
-    },
-    // 删除
-    deleteTruelove(id) {
-      request.get(`/deleteTruelove?id=${id}`).then(
-        (res) => {
-          this.UPDATETRUELOVES(res.data.truelove);
-          Message.scccess(res.data.message);
-        },
-        (err) => {
-          Message.error(err.response.data);
-          console.log(err);
-        }
-      );
-    },
-    // 查询
-    searcTruelove() {
-      console.log(this.keyWord);
-      request(`/searchTruelove?keyWord=${this.keyWord}`).then(
-        (res) => {
-          console.log(res);
-          this.UPDATETRUELOVES(res.data.truelove);
-          Message.scccess(res.data.message);
-        },
-        (err) => {
-          console.log(err);
-          Message.error(res.response.data);
-        }
-      );
     },
   },
   // mounted钩子
   mounted() {
     // 组件挂载时获取数据库中的数据
-    request
-      .get("/getTrueloveList")
-      .then((res) => {
-        this.UPDATETRUELOVES(res.data.truelove);
-        Message.scccess(res.data.message);
-      })
-      .catch((err) => {
-        Message.error(err.response.data);
-      });
+    this.getTrueloveList();
   },
 };
 </script>
@@ -225,7 +192,7 @@ export default {
     margin-top: 20px;
     float: right;
     position: absolute;
-    bottom: 30px;
+    bottom: 20px;
     right: 20px;
   }
 }

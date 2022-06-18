@@ -5,7 +5,7 @@
       <el-container>
         <el-aside width="250px">
           <el-menu
-            default-active="/bookrack/truelove"
+            default-active="/extract"
             class="el-menu-vertical-demo"
             :router="true"
           >
